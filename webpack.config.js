@@ -1,33 +1,36 @@
 const path = require('path');
 
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const GitRevisionPlugin = require('git-revision-webpack-plugin');
+const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlPlugin = require('script-ext-html-webpack-plugin');
-const StripAssertionCode = require('ts-transformer-unassert').default;
 
-const HANDLE_TYPESCRIPT_WITH_ATL = {test: /\.ts$/, loader: "awesome-typescript-loader"};
+const HANDLE_TYPESCRIPT_WITH_ATL = {
+  test: /\.ts$/,
+  loader: 'ts-loader',
+};
 
 const OUTPUT_DIRECTORY = 'dist';
 
 function recursivelyCopy(dir) {
-  return {from: dir, to: dir, toType: 'dir'};
+  return { from: dir, to: dir, toType: 'dir' };
 }
 
 function cleanUpLeftovers() {
-  return new CleanWebpackPlugin(OUTPUT_DIRECTORY, {});
+  return new CleanWebpackPlugin({});
 }
 
 function copyStaticAssets() {
-  return new CopyWebpackPlugin([
-    recursivelyCopy('css'),
-    recursivelyCopy('images'),
-    recursivelyCopy('sprites'),
-    recursivelyCopy('thirdparty'),
-    'LICENSE',
-    'COPYING',
-  ]);
+  return new CopyWebpackPlugin({
+    patterns: [
+      recursivelyCopy('css'),
+      recursivelyCopy('images'),
+      recursivelyCopy('sprites'),
+      'LICENSE',
+      'COPYING',
+    ],
+  });
 }
 
 function injectBundleIntoHTML(gitHash) {
@@ -36,7 +39,7 @@ function injectBundleIntoHTML(gitHash) {
     inject: true,
     hash: true,
     template: './index.html',
-    filename: 'index.html'
+    filename: 'index.html',
   });
 }
 
@@ -46,19 +49,19 @@ function injectBuildIdIntoAbout(gitHash) {
     inject: false,
     hash: true,
     template: './about.html',
-    filename: 'about.html'
+    filename: 'about.html',
   });
 }
 
 function deferInjectedBundle() {
   return new ScriptExtHtmlPlugin({
-    defaultAttribute: 'defer'
+    defaultAttribute: 'defer',
   });
 }
 
 function addDevelopmentConfigTo(options) {
   options.devServer = {
-    contentBase: `./${OUTPUT_DIRECTORY}`
+    contentBase: `./${OUTPUT_DIRECTORY}`,
   };
 
   options.devtool = 'source-maps';
@@ -67,27 +70,18 @@ function addDevelopmentConfigTo(options) {
 
 function addProductionConfigTo(options) {
   options.mode = 'production';
-
-  removeATLRuleFrom(options.module);
-  const assertionStrippingConfig = {
-    options: {
-      getCustomTransformers: () => {
-        return ({before: [StripAssertionCode]});
-      }
-    }
-  };
-  stripTSAssertionsRule = Object.assign(assertionStrippingConfig, HANDLE_TYPESCRIPT_WITH_ATL);
-  options.module.rules.push(stripTSAssertionsRule);
 }
 
 function removeATLRuleFrom(webpackModuleOptions) {
-  webpackModuleOptions.rules = webpackModuleOptions.rules.filter((rule) => rule !== HANDLE_TYPESCRIPT_WITH_ATL);
+  webpackModuleOptions.rules = webpackModuleOptions.rules.filter(
+    (rule) => rule !== HANDLE_TYPESCRIPT_WITH_ATL
+  );
 }
 
 function getBuildId() {
   // Technically don't need to use the webpack plugin, as not passing it to Webpack...
   const gitPlugin = new GitRevisionPlugin({
-    commitHashCommand: `log -1 --pretty=format:'%h' master`
+    commitHashCommand: `log -1 --pretty=format:'%h' master`,
   });
 
   return gitPlugin.commithash().slice(0, 12);
@@ -99,32 +93,31 @@ function commonOptions() {
   const options = {
     entry: './src/micropolis.js',
     module: {
-      rules: [
-        HANDLE_TYPESCRIPT_WITH_ATL
-      ]
+      rules: [HANDLE_TYPESCRIPT_WITH_ATL],
     },
     output: {
       path: path.resolve(__dirname, OUTPUT_DIRECTORY),
-      filename: 'src/micropolis.js'
+      filename: 'src/micropolis.js',
     },
     plugins: [
       cleanUpLeftovers(),
       copyStaticAssets(),
       injectBundleIntoHTML(buildId),
       injectBuildIdIntoAbout(buildId),
-      deferInjectedBundle()
+      deferInjectedBundle(),
     ],
     resolve: {
-      extensions: [
-        ".js", ".json", ".ts"
-      ]
-    }
+      extensions: ['.js', '.json', '.ts'],
+    },
+    externals: {
+      jquery: 'jQuery',
+    },
   };
 
   return options;
 }
 
-module.exports = function(env, argv) {
+module.exports = function (env, argv) {
   const options = commonOptions();
 
   if (env.development) {
