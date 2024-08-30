@@ -12,7 +12,6 @@ import { SHIP_CRASHED, SOUND_HONKHONK } from './messages';
 import { MiscUtils } from './miscUtils';
 import { Random } from './random';
 import { SPRITE_SHIP } from './spriteConstants';
-import { SpriteConstants } from './spriteConstants';
 import { SpriteUtils } from './spriteUtils';
 import * as TileValues from "./tileValues";
 

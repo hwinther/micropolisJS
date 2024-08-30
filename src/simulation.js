@@ -40,7 +40,7 @@ var Simulation = EventEmitter(function (gameMap, gameLevel, speed, savedGame) {
   this._simCycle = 0;
   this._cityTime = 0;
   this._cityPopLast = 0;
-  this._messageLast = Messages.VILLAGE_REACHED;
+  this._messageLast = Messages.REACHED_VILLAGE;
   this._startingYear = 1900;
 
   // Last date sent to front end
@@ -462,7 +462,7 @@ Simulation.prototype._sendMessages = function() {
 
     case 30:
       if (this._census.comPop > 100 && this._census.airportPop === 0) {
-          this._emitEvent(Messages.FRONT_END_MESSAGE, {subject: Messages._NEED_AIRPORT});
+          this._emitEvent(Messages.FRONT_END_MESSAGE, {subject: Messages.NEED_AIRPORT});
         this._valves.comCap = true;
       } else {
         this._valves.comCap = false;

@@ -11,7 +11,7 @@ import { BaseSprite } from './baseSprite';
 import { SPRITE_DYING, SPRITE_MOVED } from './messages';
 import { MiscUtils } from './miscUtils';
 import { Random } from './random';
-import { SpriteConstants } from './spriteConstants';
+import * as SpriteConstants from './spriteConstants';
 import { SpriteUtils } from './spriteUtils';
 
 function TornadoSprite(map, spriteManager, x, y) {
